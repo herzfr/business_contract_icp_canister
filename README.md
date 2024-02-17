@@ -1,56 +1,29 @@
-# Azle Hello World
+# Business Contract ICP Canisters
 
-Azle helps you to build secure decentralized/replicated servers in TypeScript or JavaScript. The current replication factor is [13-40 times](https://dashboard.internetcomputer.org/subnets).
+Welcome to your first Azle project! This example project will help you to deploy your first canister (application) to the Internet Computer (IC) decentralized cloud. It is a simple getter/setter canister. You can always refer to [The Azle Book](https://demergent-labs.github.io/azle/) for more in-depth documentation.
 
-For more documentation please see [The Azle Book](https://demergent-labs.github.io/azle/).
+This is my first Azle Project ICP Canister, this project replicates decentralized cooperation between two parties, starting from the one proposing work/collaboration to the other party that approves the work/collaboration
 
 ## Installation
 
-Run the following commands individually following the instructions in the comments:
-
+dfx is the tool you will use to interact with the IC locally and on mainnet. If you don't already have it installed:
 ```bash
-npx azle new hello_world
-cd hello_world
-
-# Ubuntu build dependencies
-sudo apt install clang
-sudo apt install build-essential
-sudo apt install libssl-dev
-sudo apt install pkg-config
-
-# Mac build dependencies
-xcode-select --install
-brew install llvm
-
-# The dfx command line tools for managing ICP applications
-DFX_VERSION=0.16.1 sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
-dfx start --clean --host 127.0.0.1:8000
-
-# In a separate terminal in the hello_world directory
-npm install
-dfx deploy
-
-# If you have problems deploying see https://demergent-labs.github.io/azle/deployment.html#common-deployment-issues
-
-# Obtain your application's [canisterId]
-dfx canister id backend
-
-# View your frontend in a web browser at http://[canisterId].localhost:8000
-
-# Communicate with your canister using any HTTP client library
-curl http://[canisterId].localhost:8000/db
-curl -X POST -H "Content-Type: application/json" -d "{ \"hello\": \"world\" }" http://[canisterId].localhost:8000/db/update
+npm run dfx_install
 ```
 
-## Examples
+Next you will want to start a replica, which is a local instance of the IC that you can deploy your canisters to:
+```bash
+npm run start
+```
 
-There are many Azle examples in the [examples directory](bkyz2-fmaaa-aaaaa-qaaaq-cai). We recommend starting with the following:
+If you ever want to stop the replica:
+```bash
+npm run stop
+```
 
--   [apollo_server](https://github.com/demergent-labs/azle/tree/main/examples/apollo_server)
--   [ethers](https://github.com/demergent-labs/azle/tree/main/examples/ethers)
--   [express](https://github.com/demergent-labs/azle/tree/main/examples/express)
--   [fs](https://github.com/demergent-labs/azle/tree/main/examples/fs)
--   [hello_world](https://github.com/demergent-labs/azle/tree/main/examples/hello_world)
--   [ic_evm_rpc](https://github.com/demergent-labs/azle/tree/main/examples/ic_evm_rpc)
--   [sqlite](https://github.com/demergent-labs/azle/tree/main/examples/sqlite)
--   [web_assembly](https://github.com/demergent-labs/azle/tree/main/examples/web_assembly)
+Now you can deploy your canister locally:
+```bash
+npm install
+npm run canister_deploy
+```
+
