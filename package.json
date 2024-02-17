@@ -1,4 +1,10 @@
 {
+    "name": "business_contract",
+    "version": "0.0.1",
+    "private": true,
+    "description": "A Business Contract system built on the Internet Computer",
+    "author": "Herza Fellani Rusdedy",
+    "license": "MIT",
     "scripts": {
         "dfx_install": "DFX_VERSION=0.15.1 sh -ci \"$(curl -fsSL https://sdk.dfinity.org/install.sh)\"",
         "build": "cd src/frontend && VITE_CANISTER_ORIGIN=http://$(dfx canister id backend).localhost:8000 vite build",
@@ -6,7 +12,9 @@
         "test": "ts-node --transpile-only --ignore=false --skip-project test/test.ts",
         "start": "dfx start --background",
         "stop": "dfx stop",
-        "canister_deploy": "dfx deploy"
+        "canister_deploy": "dfx deploy",
+        "canister_deploy_mainnet": "dfx deploy --network ic backend",
+        "canister_call": "dfx canister call backend"
     },
     "dependencies": {
         "azle": "^0.20.1",
@@ -18,5 +26,12 @@
         "ts-node": "^10.9.1",
         "typescript": "^5.2.2",
         "vite": "^5.0.12"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/herzfr/business_contract_icp_canister"
+    },
+    "bugs": {
+        "url": "https://github.com/herzfr/business_contract_icp_canister/issues"
     }
 }
