@@ -1,50 +1,38 @@
-import { None, Opt, bool, ic, nat64 } from "azle"
-import { v4 as uuidv4 } from "uuid";
+import { ic } from "azle"
 
-export const IContractor = {
-    legal_id: '',
-    company: '',
-    name: '',
-    city_stat_zipcode: '',
-    phone: '',
-    email: '',
-    website: '',
+export const ICParty = {
+    account_id: '',
+    legal_name: '',
+    address: '',
+    identification_information: '',
+    type_parties: { "INDIVIDUALS": "INDIVIDUALS" },
 }
 
-export const IClient = {
-    counterparty_identity: '',
-    counterparty_name: '',
-    city_stat_zipcode: '',
-    phone: '',
-    email: '',
-    website: ''
+export const ICSignature = {
+    party_id: '',
+    sign_date: ic.time(),
+    agree: false,
 }
 
-export const ISignature = {
-    contractor_sign: '',
-    contractor_signed: false,
-    contractor_sign_date: ic.time(),
-    client_sign: '',
-    client_signed: false,
-    client_sign_date: ic.time()
-}
-
-
-export const IContract = {
-    principal: ic.caller(),
-    createdAt: ic.time(),
-    contract_id: uuidv4(),
-    project_name: '',
-    contractor: IContractor,
-    client: IClient,
-    contract_value: 0,
-    contractual_statement: '',
-    scope_contract: '',
-    terms_of_Payment: '',
+export const ICContract = {
+    contract_id: '',
+    principal: ic.caller(), // AS A PARTY WHO CREATE CONTRACT
+    parties_involved: [], // as the involved party 
+    client_wallet_id: '',
+    effective_date: '',
+    objective: '',
+    scope_of_work: '',
+    term_and_condition: '',
+    payment_terms: '',
     term_and_termination: '',
-    confidentiality: '',
+    confidentialy: '',
+    intellectual_property: '',
+    dispute_resolution: '',
     governing_law: '',
-    entire_agreement: '',
-    signature: ISignature,
-    status_contract: false
+    force_majeure: '',
+    notice: '',
+    amendments: '',
+    signatures: [], // as the signing party
+    status: { "ISSUED": "ISSUED" },
+    contract_payment: BigInt(0)
 }

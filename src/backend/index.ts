@@ -1,165 +1,199 @@
-import { Canister, Opt, Result, StableBTreeMap, Vec, bool, ic, query, text, update } from 'azle';
+import { Canister, Opt, Principal, Result, StableBTreeMap, Vec, ic, query, text, update } from 'azle';
+import { contract, contractpayload, getcontractapplicant, getcontractholder, getcontractpayload, getpartypayload, parties, partiespayload, payloadsign, signature } from './interface';
+import { ICContract, ICParty, ICSignature } from './payload';
 import { v4 as uuidv4 } from "uuid";
-import { contract, contractor, client, signature, signclientpayload, signcontractorpayload, createcontractpayload, getcontractpayload, StatusContract } from './interface'
-import { IClient, IContract, IContractor, ISignature } from './payload';
 
 type Contract = typeof contract.tsType;
-type Contractor = typeof contractor.tsType;
-type Client = typeof client.tsType;
+type Parties = typeof parties.tsType;
 type Signature = typeof signature.tsType;
-type Status = typeof StatusContract.tsType;
 
 let businessContract = StableBTreeMap<text, Contract>(2);
+let businessParties = StableBTreeMap<text, Parties>(1);
 
 export default Canister({
-    createContracts: update([createcontractpayload], Result(contract, text), (create_som) => {
+    upsertParties: update([partiespayload], Result(parties, text), async (payload) => {
         try {
+            let party = businessParties.get(payload.account_id)
+            let new_party: Parties = ICParty
 
-            let newContractor: Contractor = IContractor
-            let newClient: Client = IClient
-            let newSignature: Signature = ISignature
-            let newContract: Contract = IContract
-
-            newContractor = {
-                ...newContractor,
-                legal_id: create_som.legal_id,
-                company: create_som.company,
-                name: create_som.name,
-                city_stat_zipcode: create_som.city_stat_zipcode,
-                phone: create_som.phone,
-                email: create_som.email,
-                website: create_som.website,
+            if ('None' in party) {
+                new_party = {
+                    ...new_party,
+                    account_id: payload.account_id,
+                    legal_name: payload.legal_name,
+                    address: payload.address,
+                    identification_information: payload.identification_information.Some ?? '',
+                    type_parties: payload.type_parties
+                }
+                businessParties.insert(new_party.account_id, new_party)
+                return Result.Ok(new_party);
             }
 
-            newContract = {
-                ...newContract,
-                contractor: newContractor,
-                client: newClient,
-                project_name: create_som.project_name,
-                contract_value: create_som.contract_value,
-                contractual_statement: create_som.contractual_statement,
-                scope_contract: create_som.scope_contract,
-                terms_of_Payment: create_som.terms_of_Payment,
-                term_and_termination: create_som.term_and_termination,
-                confidentiality: create_som.confidentiality,
-                governing_law: create_som.governing_law,
-                entire_agreement: create_som.entire_agreement,
-                signature: newSignature
+
+            let party_update = party.Some
+            party_update = {
+                ...party_update,
+                legal_name: payload.legal_name,
+                address: payload.address,
+                identification_information: payload.identification_information.Some ?? '',
+                type_parties: payload.type_parties
             }
-            businessContract.insert(newContract.contract_id, newContract)
-            return Result.Ok(newContract);
-        } catch (err) {
-            return Result.Err("Error While creating contract [" + err + "]");
+
+            businessParties.insert(party_update.account_id, party_update)
+            return Result.Ok(party_update);
+        } catch (error) {
+            return Result.Err("Error While update Party [" + error + "]");
         }
     }),
+    getParty: query([getpartypayload], Result(parties, text), (party) => {
+        let ct = businessParties.get(party.account_id)
+        if ('None' in ct) return Result.Err('Party is Empty')
+        return Result.Ok(ct.Some)
+    }),
+    createContract: update([contractpayload, Principal], Result(contract, text), (create, principal) => {
+        try {
+            let party = businessParties.get(create.parties_involved.account_id)
+            if ('None' in party) return Result.Err('Party not found, please register your party first')
 
+            let new_contract: Contract = ICContract
+            new_contract = {
+                ...new_contract,
+                contract_id: uuidv4(),
+                principal: principal,
+                client_wallet_id: create.client_wallet_id,
+                parties_involved: [party.Some],
+                effective_date: create.effective_date,
+                objective: create.effective_date,
+                scope_of_work: create.effective_date,
+                term_and_condition: create.term_and_condition,
+                payment_terms: create.payment_terms.Some ?? '',
+                term_and_termination: create.term_and_termination.Some ?? '',
+                confidentialy: create.confidentialy.Some ?? '',
+                intellectual_property: create.intellectual_property.Some ?? '',
+                dispute_resolution: create.dispute_resolution.Some ?? '',
+                governing_law: create.governing_law.Some ?? '',
+                force_majeure: create.force_majeure.Some ?? '',
+                notice: create.notice.Some ?? '',
+                amendments: create.amendments.Some ?? '',
+                signatures: [], // as the signing party
+                status: { "UNISSUED": "UNISSUED" },
+                contract_payment: create.contract_payment.Some ?? BigInt(0)
+            }
+            businessContract.insert(new_contract.contract_id, new_contract)
+            return Result.Ok(new_contract);
+        } catch (error) {
+            return Result.Err("Error While creating contract [" + error + "]");
+        }
+    }),
     getContract: query([getcontractpayload], Result(Opt(contract), text), (key) => {
         let ct = businessContract.get(key.contract_id)
         if ('None' in ct) return Result.Err('Contract is Empty')
         return Result.Ok(ct)
     }),
-
-    getContracts: query([], Result(Vec(contract), text), () => {
-        const contractList = businessContract.values();
+    getContractAplicant: query([getcontractapplicant], Result(Vec(contract), text), (list) => {
+        const contractList = businessContract.items(list.index, list.length)
+            .filter(e => e[1].principal.toString() === list.principal.toString())
+            .map(([_, contractData]) => contractData)
         if (contractList.length === 0) {
             return Result.Err(`There's no one contract list`)
         }
         return Result.Ok(contractList)
     }),
-
-    signClient: update([signclientpayload], Result(contract, text), (sign) => {
+    getContractHolder: query([getcontractholder], Result(Vec(contract), text), (list) => {
+        const contractList = businessContract.items(list.index, list.length)
+            .filter(e => e[1].client_wallet_id === list.client_wallet_id)
+            .map(([_, contractData]) => contractData)
+        if (contractList.length === 0) {
+            return Result.Err(`There's no one contract list`)
+        }
+        return Result.Ok(contractList)
+    }),
+    signContractApplicant: update([payloadsign], Result(text, text), (sign) => {
         try {
-            const contract = businessContract.get(sign.contract_id);
+            let ct = businessContract.get(sign.contract_id)
+            let new_sign: Signature = ICSignature
 
-            if ('None' in contract) { // Check contract exist
-                return Result.Err("Contract not found.");
+            if ('None' in ct) {
+                return Result.Err('Contract is Empty')
             }
 
-            const ct = contract.Some;
-
-            if (ct.signature.client_signed) { // check already signed
-                return Result.Err("You have signed this contract!");
+            if (sign.principal.toString() !== ct.Some.principal.toString()) return Result.Err("You're not as principal")
+            if (ct.Some.signatures.length > 0) {
+                let idxSign = ct.Some.signatures.findIndex(f => f.party_id === sign.parties.account_id)
+                if (idxSign !== -1) return Result.Err("You already signed!")
             }
 
-            let newClient: Client = {
-                counterparty_identity: sign.counterparty_identity,
-                counterparty_name: sign.counterparty_name,
-                city_stat_zipcode: sign.city_stat_zipcode,
-                phone: sign.phone,
-                email: sign.email,
-                website: sign.website
+            new_sign = {
+                ...new_sign,
+                agree: true,
+                sign_date: ic.time(),
+                party_id: sign.parties.account_id
             }
-
-            let newSignature: Signature = {
-                client_sign: sign.counterparty_name,
-                client_signed: true,
-                client_sign_date: ic.time(),
-                contractor_sign: '',
-                contractor_signed: false,
-                contractor_sign_date: ic.time(),
-            }
-
-            ct.client = newClient
-            ct.signature = newSignature
-
-            businessContract.insert(sign.contract_id, ct);
-
-            return Result.Ok(ct);
-        } catch (err) {
-            return Result.Err("Error While client signing contract [" + err + "]");
+            ct.Some.signatures.push(new_sign)
+            businessContract.insert(ct.Some.contract_id, ct.Some)
+            return Result.Ok("Success Signed");
+        } catch (error) {
+            return Result.Err(`Error while do signing`)
         }
     }),
-
-    signContractor: update([signcontractorpayload], Result(contract, text), (sign) => {
+    signContractHolder: update([payloadsign], Result(text, text), (sign) => {
         try {
-            const contract = businessContract.get(sign.contract_id);
-            if ('None' in contract) { // Check contract exist
-                return Result.Err("Contract not found.");
+            let ct = businessContract.get(sign.contract_id)
+            let new_sign: Signature = ICSignature
+
+            if ('None' in ct) return Result.Err('Contract is Empty')
+
+            if (ct.Some.signatures.length > 0) {
+                let idxSign = ct.Some.signatures.findIndex(f => f.party_id === sign.parties.account_id)
+                if (idxSign !== -1) return Result.Err("You already signed!")
             }
 
-            const ct = contract.Some;
+            if (ct.Some.client_wallet_id !== sign.client_wallet_id.Some) return Result.Err('Your access does not have the authority to sign')
 
-            if (!ct.signature.client_signed) { // check already signed
-                return Result.Err("Your client hasn't yet signed the contract!");
+            new_sign = {
+                ...new_sign,
+                agree: true,
+                sign_date: ic.time(),
+                party_id: sign.parties.account_id
             }
 
-            let newSignature: Signature = {
-                ...ct.signature,
-                contractor_sign: ct.contractor.name,
-                contractor_signed: true,
-                contractor_sign_date: ic.time()
-            }
-            ct.signature = newSignature
-            ct.status_contract = true
-
-            businessContract.insert(sign.contract_id, ct);
-
-            return Result.Ok(ct);
-        } catch (err) {
-            return Result.Err("Error While contractor signing contract [" + err + "]");
+            ct.Some.parties_involved.push(sign.parties)
+            ct.Some.signatures.push(new_sign)
+            businessContract.insert(ct.Some.contract_id, ct.Some)
+            return Result.Ok("Success Signed");
+        } catch (error) {
+            return Result.Err(`Error while do signing`)
         }
     }),
+    issued: update([getcontractpayload], Result(text, text), (key) => {
+        try {
+            let ct = businessContract.get(key.contract_id)
+            if ('None' in ct) return Result.Err("There are no contracts listed")
+            if (key.principal.toString() !== ct.Some.principal.toString()) return Result.Err("You don't have access")
+            if (ct.Some.signatures.length === 1) return Result.Err("You and client must sign first before issued")
+            ct.Some.status = { "ISSUED": "SUCCESS" }
 
-    statusContract: query([getcontractpayload], Result(StatusContract, text), (key) => {
-        let ct = businessContract.get(key.contract_id)
-        if ('None' in ct) return Result.Err('Contract is Empty')
-
-        const contract_get = ct.Some
-
-        let statusContract: Status = {
-            contract_id: key.contract_id,
-            status: ''
+            businessContract.insert(ct.Some.contract_id, ct.Some)
+            return Result.Ok("Success Issued");
+        } catch (error) {
+            return Result.Err(`Error Issued`)
         }
 
-        if (!contract_get.signature.client_signed && !contract_get.signature.client_signed) {
-            statusContract.status = `Waiting for the client's signature`
-        } else if (!contract_get.signature.client_signed && contract_get.signature.client_signed) {
-            statusContract.status = `The awaiting of approval from the contracting party`
-        } else if (contract_get.signature.client_signed && contract_get.signature.client_signed) {
-            statusContract.status = `The contract has been approved and the collaboration is currently underway`
-        } else {
-            statusContract.status = ``
+
+    }),
+    unissued: update([getcontractpayload], Result(text, text), (key) => {
+        try {
+            let ct = businessContract.get(key.contract_id)
+            if ('None' in ct) return Result.Err("There are no contracts listed")
+            if (key.principal.toString() !== ct.Some.principal.toString()) return Result.Err("You don't have access")
+            ct.Some.status = { "UNISSUED": "UNISSUED" }
+
+            businessContract.insert(ct.Some.contract_id, ct.Some)
+            return Result.Ok("Success Unissued");
+        } catch (error) {
+            return Result.Err(`Error Unissued`)
         }
-        return Result.Ok(statusContract)
+
+
     })
 })

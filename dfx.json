@@ -1,5 +1,20 @@
 {
     "canisters": {
+        "whoami": {
+            "type": "custom",
+            "main": "src/whoami/index.ts",
+            "candid": "src/whoami/index.did",
+            "build": "npx azle whoami",
+            "wasm": ".azle/whoami/whoami.wasm",
+            "gzip": true,
+            "assets": [
+                [
+                    "src/frontend/dist",
+                    "dist"
+                ]
+            ],
+            "build_assets": "npm run build"
+        },
         "backend": {
             "type": "custom",
             "main": "src/backend/index.ts",
@@ -14,6 +29,25 @@
                 ]
             ],
             "build_assets": "npm run build"
+        },
+        "internet_identity": {
+            "type": "custom",
+            "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+            "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
+            "remote": {
+                "id": {
+                    "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+                }
+            },
+            "frontend": {}
         }
-    }
+    },
+    "defaults": {
+        "build": {
+            "args": "",
+            "packtool": ""
+        }
+    },
+    "output_env_file": ".env",
+    "version": 1
 }

@@ -1,90 +1,111 @@
-import { Opt, Principal, Record, bool, float64, nat64, text } from "azle";
+import { Opt, Principal, Record, Variant, Vec, bool, int, int8, nat64, text } from "azle";
 
-export const contractor = Record({
-    legal_id: text,
-    company: text,
-    name: text,
-    city_stat_zipcode: text,
-    phone: text,
-    email: text,
-    website: text,
+export const TipeParty = Variant({
+    INDIVIDUALS: text,
+    COMPANIES: text,
+    ORGANIZATIONS: text,
 });
 
-export const client = Record({
-    counterparty_identity: text,
-    counterparty_name: text,
-    city_stat_zipcode: text,
-    phone: text,
-    email: text,
-    website: text,
+export const ContractStatus = Variant({
+    ISSUED: text,
+    UNISSUED: text,
+});
+
+const Error = Variant({
+    NotFound: text,
+    InvalidPayload: text,
+});
+
+export const parties = Record({
+    account_id: text,
+    legal_name: text,
+    address: text,
+    identification_information: text,
+    type_parties: TipeParty,
 });
 
 export const signature = Record({
-    contractor_sign: text,
-    contractor_signed: bool,
-    contractor_sign_date: nat64,
-    client_sign: text,
-    client_signed: bool,
-    client_sign_date: nat64,
+    party_id: text,
+    sign_date: nat64,
+    agree: bool,
 })
 
 export const contract = Record({
-    principal: Principal,
-    createdAt: nat64,
+    principal: Principal, // AS A PARTY WHO CREATE CONTRACT
     contract_id: text,
-    project_name: text,
-    contractor: contractor,
-    client: client,
-    contract_value: float64,
-    contractual_statement: text,
-    scope_contract: text,
-    terms_of_Payment: text,
+    client_wallet_id: text, // ITS a client wallet id
+    parties_involved: Vec(parties), // as the involved party 
+    effective_date: text,
+    objective: text,
+    scope_of_work: text,
+    term_and_condition: text,
+    payment_terms: text,
     term_and_termination: text,
-    confidentiality: text,
+    confidentialy: text,
+    intellectual_property: text,
+    dispute_resolution: text,
     governing_law: text,
-    entire_agreement: text,
-    signature: signature,
-    status_contract: bool,
+    force_majeure: text,
+    notice: text,
+    amendments: text,
+    signatures: Vec(signature), // as the signing party
+    status: ContractStatus,
+    contract_payment: nat64
 })
 
-export const createcontractpayload = Record({
-    legal_id: text,
-    company: text,
-    name: text,
-    city_stat_zipcode: text,
-    phone: text,
-    email: text,
-    website: text,
-    project_name: text,
-    contract_value: float64,
-    contractual_statement: text,
-    scope_contract: text,
-    terms_of_Payment: text,
-    term_and_termination: text,
-    confidentiality: text,
-    governing_law: text,
-    entire_agreement: text,
+export const contractpayload = Record({
+    principal: Principal, // AS A PARTY WHO CREATE CONTRACT
+    parties_involved: parties, // as the involved party 
+    client_wallet_id: text,
+    effective_date: text,
+    objective: text,
+    scope_of_work: text,
+    term_and_condition: text,
+    payment_terms: Opt(text),
+    term_and_termination: Opt(text),
+    confidentialy: Opt(text),
+    intellectual_property: Opt(text),
+    dispute_resolution: Opt(text),
+    governing_law: Opt(text),
+    force_majeure: Opt(text),
+    notice: Opt(text),
+    amendments: Opt(text),
+    signatures: Vec(signature), // as the signing party
+    contract_payment: Opt(nat64)
+})
+
+export const partiespayload = Record({
+    account_id: text,
+    legal_name: text,
+    address: text,
+    identification_information: Opt(text),
+    type_parties: TipeParty,
+});
+
+export const getpartypayload = Record({
+    account_id: text
 })
 
 export const getcontractpayload = Record({
-    contract_id: text
-})
-
-export const signcontractorpayload = Record({
-    contract_id: text
-})
-
-export const signclientpayload = Record({
     contract_id: text,
-    counterparty_identity: text,
-    counterparty_name: text,
-    city_stat_zipcode: text,
-    phone: text,
-    email: text,
-    website: text,
+    principal: Principal
 })
 
-export const StatusContract = Record({
+export const getcontractapplicant = Record({
+    principal: Principal,
+    index: int8,
+    length: int8
+})
+
+export const getcontractholder = Record({
+    client_wallet_id: text,
+    index: int8,
+    length: int8
+})
+
+export const payloadsign = Record({
+    parties: parties,
+    principal: Principal,
     contract_id: text,
-    status: text,
+    client_wallet_id: Opt(text)
 })
