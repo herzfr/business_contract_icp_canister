@@ -27,3 +27,28 @@ npm install
 npm run canister_deploy
 ```
 
+## Alternatif Installation and Running Project
+run dfx first:
+```bash
+dfx start --background --clean
+```
+
+create canister all inside project:
+```bash
+dfx canister create --all
+```
+
+build canister all inside project:
+```bash
+dfx build
+```
+
+install canister all inside project:
+```bash
+dfx canister install --all
+```
+
+deploy all project:
+```bash
+dfx deploy
+```
