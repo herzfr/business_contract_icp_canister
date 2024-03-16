@@ -6,30 +6,32 @@ Welcome to your first Azle project! This example project will help you to deploy
 
 This is my first Azle Project ICP Canister, this project replicates decentralized cooperation between two parties, starting from the one proposing work/collaboration to the other party that approves the work/collaboration
 
-## Installation
+## Installation DFX
 
 dfx is the tool you will use to interact with the IC locally and on mainnet. If you don't already have it installed:
 ```bash
 npm run dfx_install
 ```
 
-Next you will want to start a replica, which is a local instance of the IC that you can deploy your canisters to:
+## Quick Install Run
+
+Clone git project:
 ```bash
-npm run start
+  git clone https://github.com/herzfr/business_contract_icp_canister
+  cd clone project
 ```
 
-If you ever want to stop the replica:
+Quick 1
 ```bash
-npm run stop
+npm run practicetorun
+```
+Quick 2
+```bash
+npm run practicetorun2
 ```
 
-Now you can deploy your canister locally:
-```bash
-npm install
-npm run canister_deploy
-```
 
-## Alternatif Installation and Running Project
+## Installation and Running Project
 run dfx first:
 ```bash
 dfx start --background --clean

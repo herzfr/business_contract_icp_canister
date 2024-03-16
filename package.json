@@ -17,7 +17,10 @@
         "install:canister:all": "dfx canister install --all",
         "deploy:canister": "dfx canister install --all",
         "canister:deploy": "dfx deploy",
-        "deploytillrun": "npm run create:canister:all && build:canister && install:canister:all && deploy:canister && canister:deploy",
+        "deploytillrun": "npm run create:canister:all && npm run build:canister && npm run install:canister:all && npm run deploy:canister && npm run canister:deploy",
+        "deploytillrun2": "npm run create:canister:all && npm run build:canister && npm run deploy:canister && npm run canister:deploy",
+        "practicetorun": "npm run start && npm run deploytillrun",
+        "practicetorun2": "npm run start && npm run deploytillrun2",
         "build:run": "build:canister && canister:deploy",
         "canister:deploy:mainnet": "dfx deploy --network ic backend"
     },
