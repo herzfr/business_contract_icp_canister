@@ -10,12 +10,16 @@
         "build": "cd src/frontend && VITE_CANISTER_ORIGIN=http://$(dfx canister id backend).localhost:8000 vite build",
         "pretest": "ts-node --transpile-only --ignore=false --skip-project test/pretest.ts",
         "test": "ts-node --transpile-only --ignore=false --skip-project test/test.ts",
-        "start": "dfx start --background --clean --host 127.0.0.1:8000",
+        "start": "dfx start --background --clean",
         "stop": "dfx stop",
-        "create_canister": "dfx canister create --all",
-        "canister_deploy": "dfx deploy",
-        "canister_deploy_mainnet": "dfx deploy --network ic backend",
-        "canister_call": "dfx canister call backend"
+        "create:canister:all": "dfx canister create --all",
+        "build:canister": "dfx build",
+        "install:canister:all": "dfx canister install --all",
+        "deploy:canister": "dfx canister install --all",
+        "canister:deploy": "dfx deploy",
+        "deploytillrun": "npm run create:canister:all && build:canister && install:canister:all && deploy:canister && canister:deploy",
+        "build:run": "build:canister && canister:deploy",
+        "canister:deploy:mainnet": "dfx deploy --network ic backend"
     },
     "dependencies": {
         "azle": "^0.20.1",
